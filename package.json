@@ -1,0 +1,79 @@
+{
+  "name": "captcha-detector",
+  "version": "1.0.0",
+  "description": "Detect whether a web page contains a captcha or bot check: reCAPTCHA, hCaptcha, Turnstile, Cloudflare, Arkose, GeeTest, AWS WAF, DataDome, PerimeterX, Akamai, Imperva and 60+ more. Works in the browser, Playwright, Puppeteer, Selenium and on raw HTML in Node. Zero dependencies.",
+  "keywords": [
+    "captcha",
+    "captcha-detection",
+    "detect-captcha",
+    "recaptcha",
+    "hcaptcha",
+    "turnstile",
+    "cloudflare",
+    "bot-detection",
+    "anti-bot",
+    "challenge",
+    "datadome",
+    "perimeterx",
+    "akamai",
+    "geetest",
+    "arkose",
+    "funcaptcha",
+    "scraping",
+    "playwright",
+    "puppeteer",
+    "selenium"
+  ],
+  "license": "MIT",
+  "author": "ScrapePass (https://scrapepass.com)",
+  "homepage": "https://github.com/ScrapePass/captcha-detector",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ScrapePass/captcha-detector.git"
+  },
+  "bugs": "https://github.com/ScrapePass/captcha-detector/issues",
+  "main": "./dist/captcha-detector.js",
+  "module": "./dist/captcha-detector.mjs",
+  "browser": "./dist/captcha-detector.js",
+  "unpkg": "./dist/captcha-detector.js",
+  "jsdelivr": "./dist/captcha-detector.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/captcha-detector.mjs",
+      "require": "./dist/captcha-detector.js",
+      "default": "./dist/captcha-detector.js"
+    },
+    "./page": {
+      "types": "./page.d.ts",
+      "import": "./lib/page.mjs",
+      "require": "./lib/page.cjs"
+    },
+    "./script": "./dist/captcha-detector.js",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "captcha-detector": "bin/captcha-detector.js"
+  },
+  "files": [
+    "dist",
+    "lib",
+    "bin",
+    "index.d.ts",
+    "page.d.ts"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/build.mjs && node --test test/html.test.mjs test/browser.test.mjs",
+    "test:live": "node scripts/build.mjs && node test/live.mjs",
+    "prepublishOnly": "npm test"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
