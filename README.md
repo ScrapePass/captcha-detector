@@ -6,6 +6,7 @@
 - **Answers three questions:** is there a captcha (`captcha`), is it on screen right now (`visible`), and is the whole page a bot check (`challengePage`) or a block page (`blocked`)?
 - **Runs anywhere:** in the browser, in Playwright, Puppeteer and Selenium (cross-origin frames included), in a browser extension, or on raw HTML in Node, Deno, Bun or a worker.
 - **Checks scraper API results:** pass what a scraper API or HTTP client returned to `detectResponse()` and find out whether you got the real page or a captcha, bot check or block page.
+- **Python too:** `pip install captcha-detector` for the same detector in Python (requests, httpx, aiohttp, Scrapy, Playwright, Selenium). See [captcha-detector-python](https://github.com/ScrapePass/captcha-detector-python).
 - **Zero dependencies**, one ~80 KB file, MIT licensed.
 
 ```js
@@ -125,6 +126,22 @@ Pass `url`, the page you asked the API to scrape, not the API's own address. Mos
 the site's real status or headers somewhere else, pass them as `status` and `headers` and block pages are
 caught more reliably. Raw HTML can't show whether a widget is on screen, so check `captcha`, `challengePage`
 and `blocked` rather than `visible`.
+
+### Python
+
+```bash
+pip install captcha-detector
+```
+
+```python
+from captcha_detector import detect_response
+
+r = detect_response(requests.get(url))   # or httpx, aiohttp, Scrapy, a scraper API's JSON, an HTML string
+if r.captcha or r.challenge_page or r.blocked:
+    print(r.summary)
+```
+
+Playwright (`detect_in_page`), Selenium (`detect_selenium`) and a CLI are included. The Python package shares this signature database, and its tests check it gives the same results as the JavaScript engine. See [captcha-detector-python](https://github.com/ScrapePass/captcha-detector-python).
 
 ### Command line
 
@@ -310,7 +327,8 @@ Each product is a **signature** in [`src/signatures.js`](src/signatures.js): the
 1. Add or edit a signature in [`src/signatures.js`](src/signatures.js) (the comment at the top lists every field).
 2. Add a test page to [`test/cases.mjs`](test/cases.mjs), including a page that must *not* match if the new rule could catch ordinary pages.
 3. `npm test` (HTML mode in Node, and the same pages in a real Chromium when Playwright is installed). `npm run test:live` checks real demo pages and ordinary sites.
-4. Open a pull request. The provider table in this README is rebuilt by `npm run build`.
+4. If the signature has a `refine()` step, port it to `src/captcha_detector/refine.py` in [captcha-detector-python](https://github.com/ScrapePass/captcha-detector-python) as well. With that repository cloned next to this one, `npm run test:python` exports the signatures and every test page, with the JavaScript result, to the Python package, and runs its tests, which check that both engines give the same answers.
+5. Open a pull request. The provider table in this README is rebuilt by `npm run build`.
 
 ## License
 

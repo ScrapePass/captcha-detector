@@ -71,7 +71,8 @@
     "build": "node scripts/build.mjs",
     "test": "node scripts/build.mjs && node --test test/html.test.mjs test/browser.test.mjs",
     "test:live": "node scripts/build.mjs && node test/live.mjs",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test",
+    "test:python": "node scripts/build.mjs && cd \"${CAPTCHA_DETECTOR_PYTHON:-../captcha-detector-python}\" && PYTHONPATH=src python3 -m unittest discover -s tests -t ."
   },
   "devDependencies": {
     "playwright": "^1.48.0"

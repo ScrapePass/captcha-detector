@@ -64,4 +64,64 @@ if (existsSync(readme)) {
   if (next !== text) writeFileSync(readme, next);
 }
 
+// Python package (github.com/ScrapePass/captcha-detector-python, cloned next to this repo, or CAPTCHA_DETECTOR_PYTHON):
+// the same signature database as JSON, the browser build for the Selenium/Playwright helpers, and parity fixtures
+// (every test page with the JS result) so the Python port is checked against this engine.
+const pyRoot = process.env.CAPTCHA_DETECTOR_PYTHON || join(root, '../captcha-detector-python');
+const py = join(pyRoot, 'src/captcha_detector');
+if (existsSync(py)) {
+  const { SIGNATURES } = await import(join(root, 'src/signatures.js') + `?t=${Date.now()}`);
+  const re = (r) => ({ re: r.source, flags: r.flags });
+  const entry = (type, e) => {
+    if (type === 'globals') return undefined; // browser only: the Python engine checks HTML
+    if (type === 'status') return e;
+    if (type === 'headers') return { name: e[0], ...re(e[1]), w: e[2] };
+    if (type === 'elements') {
+      if (typeof e === 'string') return { sel: e };
+      if (Array.isArray(e)) return { sel: e[0], w: e[1] };
+      return { sel: e.sel, attr: e.attr, ...re(e.re), w: e.w };
+    }
+    if (type === 'cookies') {
+      const [p, w] = Array.isArray(e) ? e : [e];
+      return p instanceof RegExp ? { ...re(p), w } : { name: p, w };
+    }
+    const [p, w, any] = Array.isArray(e) ? e : [e];
+    return { ...re(p), w, any: any === 'any' || undefined };
+  };
+  const types = ['scripts', 'frames', 'elements', 'inline', 'urls', 'title', 'text', 'cookies', 'headers', 'status'];
+  const sigs = SIGNATURES.map((s) => {
+    const o = { id: s.id, name: s.name, vendor: s.vendor || null, kind: s.kind, subtype: s.subtype || null, site: s.site || null, generic: !!s.generic, refine: !!s.refine };
+    for (const t of types) if (s[t]) o[t] = s[t].map((e) => entry(t, e));
+    return o;
+  });
+  writeFileSync(join(py, 'signatures.json'), JSON.stringify({ version: pkg.version, signatures: sigs }, null, 1) + '\n');
+  writeFileSync(join(py, 'captcha-detector.js'), umd);
+
+  const C = (await import(join(root, 'dist/captcha-detector.mjs') + `?t=${Date.now()}`)).default;
+  const { CASES } = await import(join(root, 'test/cases.mjs'));
+  const pages = CASES.map((c) => ({ name: c.name, html: c.html, opts: c.opts || {} }));
+  const extra = [
+    { name: 'min confidence', html: '<div class="captcha-wrap"></div><img src="/captcha.png">', opts: { minConfidence: 0.9 } },
+    { name: 'base href and relative script', html: '<base href="https://cdn.example/a/"><script src="../recaptcha/x.js"></script><script src="//www.google.com/recaptcha/api.js"></script><div class="g-recaptcha"></div>', opts: { url: 'https://shop.example/p?q=1' } },
+    { name: 'entities and comments', html: '<!-- <div class="h-captcha"></div> --><title>Just a moment&hellip;</title><p>Checking if the site connection is secure&#x2e; &amp; more&nbsp;text</p><div id="challenge-form"></div>', opts: {} },
+    { name: 'cookies array', html: '<p>hi</p>', opts: { cookies: ['_px3=abc', { name: '_pxhd' }], headers: [['Set-Cookie', 'datadome=1; Path=/'], ['X-DataDome', 'protected']] } },
+    { name: 'cookies object', html: '<p>hi</p>', opts: { cookies: { incap_ses_123: 'x', reese84: 'y' } } },
+    { name: 'empty', html: '', opts: {} },
+    { name: 'broken', html: '<div class="g-recaptcha', opts: {} },
+    { name: 'attr selectors', html: '<iframe title="Widget containing ARKOSE challenge" src="/x"></iframe><input type="hidden" name="captcha_answer"><input name="captcha_answer2" placeholder="Captcha text">', opts: {} },
+  ];
+  const fixtures = pages.concat(extra).map((p) => ({ ...p, result: C.detectHtml(p.html, p.opts) }));
+  const responses = [
+    { name: 'json wrapped', input: { success: true, result: { status_code: 403, url: 'https://shop.example/p/1', content: CASES[0].html } }, opts: {} },
+    { name: 'json string', input: JSON.stringify({ body: CASES[1].html }), opts: { url: 'https://a.example/' } },
+    { name: 'html string', input: CASES[2].html, opts: {} },
+    { name: 'plain json', input: { items: [1, 2, 3], next: null }, opts: {} },
+    { name: 'axios-like', input: { data: { html: CASES[3].html }, status: 200, headers: { server: 'cloudflare' } }, opts: {} },
+  ];
+  for (const r of responses) r.result = await C.detectResponse(r.input, r.opts);
+  mkdirSync(join(pyRoot, 'tests'), { recursive: true });
+  writeFileSync(join(pyRoot, 'tests/fixtures.json'), JSON.stringify({ version: pkg.version, pages: fixtures, responses }) + '\n');
+  console.log(`python (${pyRoot}): signatures.json (${sigs.length}), captcha-detector.js, tests/fixtures.json (${fixtures.length} pages)`);
+}
+
 console.log(`built dist/captcha-detector.js (${(umd.length / 1024).toFixed(1)} KB) and dist/captcha-detector.mjs`);
