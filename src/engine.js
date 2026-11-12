@@ -1,6 +1,6 @@
 import { SIGNATURES } from './signatures.js';
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 
 /** Kinds that mean "there is a captcha / human check on this page". */
 const CAPTCHA_KINDS = { widget: 1, invisible: 1, image: 1, question: 1, 'challenge-page': 1 };

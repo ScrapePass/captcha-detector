@@ -191,6 +191,18 @@ export const CASES = [
     expect: { captcha: true, challengePage: true, ids: ['amazon-captcha'], absent: ['generic-image-captcha'] },
   },
   {
+    name: 'Amazon continue-shopping check (2025)',
+    html: page('', '<div class="a-container a-padding-double-large"><div class="a-row a-spacing-double-large"><h4>Click the button below to continue shopping</h4><form method="get" action="/errors_page/validateCaptcha" name=""><input type=hidden name="amzn" value="abc123"><input type=hidden name="amzn-r" value="/dp/B0EXAMPLE"><input type=hidden name="field-keywords" value="XYZW"><span class="a-button a-button-primary"><button type="submit" class="a-button-text">Continue shopping</button></span></form></div><div class="a-divider-inner"></div><div class="a-text-center a-size-mini"><a href="/gp/help/customer/display.html">Conditions of Use</a> <a href="/privacy">Privacy Policy</a> &copy; 1996-2025, Amazon.com, Inc. or its affiliates</div></div>', 'Amazon.com'),
+    opts: { url: 'https://www.amazon.com/dp/B0EXAMPLE' },
+    expect: { captcha: true, challengePage: true, ids: ['amazon-captcha'] },
+  },
+  {
+    name: 'Amazon continue-shopping check, wording only (no form)',
+    html: page('', '<div class="a-container"><h4>Click the button below to continue shopping</h4><button class="a-button-text">Continue shopping</button><p>&copy; 1996-2025, Amazon.com, Inc. or its affiliates</p></div>', 'Amazon.com'),
+    opts: { url: 'https://www.amazon.com/dp/B0EXAMPLE' },
+    expect: { captcha: true, challengePage: true, ids: ['amazon-captcha'] },
+  },
+  {
     name: 'Yandex showcaptcha',
     html: page('', '<div class="CheckboxCaptcha"><form id="checkbox-captcha-form" action="/checkcaptcha?key=abc" method="POST"><p>Please confirm that you and not a robot are sending requests</p><input type="submit" value="I\'m not a robot"></form></div>', 'Are you not a robot?'),
     opts: { url: 'https://yandex.com/showcaptcha?cc=1&retpath=x' },

@@ -1,6 +1,6 @@
 {
   "name": "captcha-detector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Detect whether a web page contains a captcha or bot check: reCAPTCHA, hCaptcha, Turnstile, Cloudflare, Arkose, GeeTest, AWS WAF, DataDome, PerimeterX, Akamai, Imperva and 60+ more. Works in the browser, Playwright, Puppeteer, Selenium and on raw HTML in Node. Zero dependencies.",
   "keywords": [
     "captcha",
